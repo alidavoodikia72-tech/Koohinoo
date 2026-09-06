@@ -1,0 +1,48 @@
+{
+  "name": "koohinoo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -H 127.0.0.1 -p 3000",
+    "start:3001": "next start -H 127.0.0.1 -p 3001",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "seed": "tsx prisma/seed.ts",
+    "ci:check": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "postinstall": "prisma generate",
+    "smoke": "node -e \"const c=new AbortController();setTimeout(()=>c.abort(),8000);fetch('http://127.0.0.1:3000/api/health',{signal:c.signal}).then(async r=>{const t=await r.text();console.log(r.status);console.log(t);process.exit(r.ok?0:1)}).catch(e=>{console.error(e?.message||e);process.exit(1)})\""
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "2.11.3",
+    "@hookform/resolvers": "5.5.7",
+    "@prisma/client": "6.19.3",
+    "bcryptjs": "^3.0.3",
+    "lucide-react": "^1.31.0",
+    "next": "14.2.5",
+    "next-auth": "5.0.0-beta.32",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "7.83.0",
+    "recharts": "^3.10.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/bcryptjs": "3.0.0",
+    "@types/node": "24.13.3",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "8.57.1",
+    "eslint-config-next": "14.2.5",
+    "postcss": "8.5.23",
+    "prisma": "6.19.3",
+    "tailwindcss": "4.3.3",
+    "tsx": "^4.16.2",
+    "typescript": "5.4.5",
+    "vitest": "2.1.9"
+  }
+}

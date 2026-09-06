@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// --- Enumها (انواع داده‌های ثابت) ---
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MEMBER
+}
+
+enum TripStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING   // در انتظار پرداخت
+  CONFIRMED // تایید شده و پرداخت شده
+  CANCELLED // لغو شده
+  REFUNDED  // مسترد شده
+}
+
+enum PaymentMethod {
+  ONLINE       // درگاه پرداخت مستقیم
+  CARD_TRANSFER // کارت به کارت (نیاز به تایید ادمین)
+  WALLET       // از کیف پول
+}
+
+// --- مدل‌های اصلی سیستم ---
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  role      Role     @default(MEMBER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // روابط باشگاهی
+  clubId String?
+  club   Club?   @relation(fields: [clubId], references: [id], onDelete: SetNull)
+
+  // روابط برنامه‌ها و رزروها
+  tripsCreated Trip[]    @relation("TripCreatedBy")
+  bookings     Booking[] // تاریخچه رزروهای کاربر
+}
+
+model Club {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+
+  // متادیتا
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // روابط
+  users User[]
+  trips Trip[]
+}
+
+model Trip {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  startDate   DateTime   
+  endDate     DateTime?
+  location    String
+  difficulty  String     // آسان، متوسط، سخت
+  price       Int        @default(0)
+  capacity    Int        @default(20)
+  status      TripStatus @default(DRAFT)
+
+  // روابط باشگاهی و سازنده
+  clubId      String
+  club        Club       @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  createdById String
+  createdBy   User       @relation("TripCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+
+  // رابطه با رزروها (برای مدیریت ظرفیت)
+  bookings    Booking[]
+
+  // متادیتا
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // ایندکس‌ها برای سرعت جستجو
+  @@index([clubId, startDate])
+  @@index([status])
+}
+
+// --- سیستم رزرو و مالی ---
+
+model Booking {
+  id          String        @id @default(cuid())
+  
+  // ارتباط با برنامه صعود
+  tripId      String
+  trip        Trip          @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  
+  // ارتباط با کاربر رزرو کننده
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  status      BookingStatus @default(PENDING)
+  totalPrice  Int           // مبلغ نهایی در لحظه رزرو
+  
+  // تعداد همراهان (خود کاربر + تعداد همراه)
+  participantCount Int      @default(1)
+  
+  // ارتباط با تراکنش‌های مالی
+  payments    Payment[]
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([tripId])
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  
+  // ارتباط با رزرو مربوطه
+  bookingId     String
+  booking       Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  amount        Int
+  method        PaymentMethod @default(ONLINE)
+  status        String        // 'SUCCESS', 'FAILED', 'PENDING'
+  
+  referenceId   String?       @unique // کد پیگیری بانکی یا شماره فیش (بسیار مهم برای مدیریت مالی)
+  gateway       String?       // درگاه پرداخت (مثل زرین‌پال)
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([bookingId])
+}

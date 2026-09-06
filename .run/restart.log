@@ -1,0 +1,6 @@
+﻿[2026-08-22 20:10:46] Restart requested. Port=3000 SkipInstall=True ForceFreePort=False HealthTimeoutSec=60
+[2026-08-22 20:10:47] Shell: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe
+[2026-08-22 20:10:47] Running stop script...
+[2026-08-22 20:10:47] stop.ps1 completed successfully.
+[2026-08-22 20:10:47] Running start script...
+[2026-08-22 20:14:16] Restart flow finished successfully.
