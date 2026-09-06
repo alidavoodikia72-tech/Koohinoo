@@ -39,3 +39,8 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - Branch: chore/ci-evidence
 - Main synced with origin
 - Working tree clean
+
+## CI Evidence
+- Branch: chore/ci-evidence
+- Main synced with origin
+- Working tree clean
